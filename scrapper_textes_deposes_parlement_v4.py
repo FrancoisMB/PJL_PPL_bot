@@ -106,7 +106,7 @@ def main():
         if len(input_text) <= tweet_size:
             return input_text +" "
         else:
-            return input_text[:tweet_size-3]+"... "
+            return input_text[:tweet_size-1]+"… "
 
     #%%
 
