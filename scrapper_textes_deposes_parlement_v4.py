@@ -10,10 +10,14 @@ http://www.senat.fr/dossiers-legislatifs/textes-recents.html
 @author: Francois
 """
 
-import os, re, time
+import logging, os, re, time
 from pathlib import Path
 from lxml import html
 import tweepy, requests, pandas
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # on initie un DF      num text | date d'ajout | tweeté
 # on charge le csv de mémoire dedans
@@ -55,7 +59,7 @@ def main():
     f = open("date_dernier_run.txt", "r")
     date_dernier_run = f.read()
     f.close()
-    print("date_dernier_run =", date_dernier_run)
+    logger.info(f"{date_dernier_run = }")
 
     # connexion à twitter
     consumer_key = ""
@@ -70,9 +74,9 @@ def main():
     try:
         api.verify_credentials()
     except Exception:
-        print("Error during authentication")
+        logger.error("Error during authentication")
     else:
-        print("Authentication OK")
+        logger.info("Authentication OK")
 
     tweet_size = 280 - 24
 
@@ -168,7 +172,6 @@ def main():
 
     send_to_twitter = True
     enregistrer_quand_meme = True
-    verbose = 0
 
     scrap_AN = True
     nb_de_textes_a_scrapper = 149
@@ -188,7 +191,7 @@ def main():
             try:
                 df_AN = pandas.read_csv(nom_fichier_AN, index_col=0)
             except Exception:
-                print("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
+                logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
                 df_AN = pandas.DataFrame(columns=["flag_tweeted"])
 
             # on ajoute une nouvelle colonne vide flag_vu
@@ -203,7 +206,7 @@ def main():
             try:
                 df_S = pandas.read_csv(nom_fichier_S, index_col=0)
             except Exception:
-                print("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
+                logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
                 df_S = pandas.DataFrame(columns=["flag_tweeted"])
 
             # on ajoute une nouvelle colonne vide flag_vu
@@ -238,8 +241,7 @@ def main():
                         numero_du_texte = numero_du_texte.replace(u'\xa0', u'')
                         #print(numero_du_texte)
                     except Exception:
-                        print("AN erreur pour récupérer numéro du texte à la boucle n°" + str(i-1))
-                        print("")
+                        logger.error(f"AN erreur pour récupérer numéro du texte à la boucle n°{i-1}\n")
                         continue
 
                     #numero_du_texte = "4723"
@@ -252,7 +254,7 @@ def main():
                         # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
                         df_AN.at[numero_du_texte,"flag_vu"] = 1
                         if df_AN.at[numero_du_texte, "flag_tweeted"] == 1: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
-                            if verbose:print(numero_du_texte, "\t \t \t \t \t \t déjà tweeté")
+                            logger.debug(f"{numero_du_texte} \t \t \t \t \t \t déjà tweeté")
                             continue
 
                     # si on arrive là c'est soit que c'est un nouveau texte dans la liste
@@ -267,14 +269,14 @@ def main():
                     except Exception:
                         # si on est ici, c'est qu'il n'y a pas la mention "mis en ligne le XXX" dans la liste, et donc que 2 éléments et pas 3 sur la ligne
                         # et donc la recherche avec le xpath de "lien_vers_texte" ci dessus renvoie une erreur "list index out of range"
-                        if verbose:print(numero_du_texte, "\t \t \t \t \t \t doc non pub")
+                        logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub")
                         continue
 
                     try:
                         page_texte_AN = requests.get(lien_vers_texte)
                         # si on trouve "Document non encore publié", on passe au prochain texte de la liste
                         if "Document non encore publié" in page_texte_AN.text:
-                            if 1:print(numero_du_texte, "\t \t \t \t \t \t doc non pub type 2 c chelou")
+                            logger.warning(f"{numero_du_texte} \t \t \t \t \t \t doc non pub type 2 c chelou")
                             continue
                     except Exception:
                         # là j'ai voulu faire une vérif que dans la page du texte, il n'y avait pas "Document non encore publié
@@ -287,8 +289,7 @@ def main():
                         intitule_du_texte = str(tree.xpath(base_xpath+'/p/text()')[0])
                         #print(intitule_du_texte)
                     except Exception:
-                        print("AN erreur pour récupérer intitulé du texte", numero_du_texte)
-                        print("")
+                        logger.error(f"AN erreur pour récupérer intitulé du texte {numero_du_texte}\n")
                         continue  # permet de ne pas mettre un truc sans intitule_du_texte dans liste_textes
 
                     intitule_du_texte = formatage_texte(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
@@ -301,14 +302,11 @@ def main():
                         except Exception as err:
                             if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                 df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                            print("Erreur lors du tweet de", texte_du_tweet)
-                            print(err)
-                            print("")
+                            logger.error("Erreur lors du tweet de {texte_du_tweet} :\n{err}\n")
                             continue
                     # et on set flag tweeté = 1
                     df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                    print("AN -", texte_du_tweet)
-                    print(" ")
+                    logger.info(f"AN - {texte_du_tweet}\n")
 
                 if enregistrer_quand_meme:
                     # dans le df_AN, on supprime les lignes où vu = 0
@@ -353,7 +351,7 @@ def main():
                             intitule_du_texte = liste_intitule_des_textes[j].text
                             #print(liste_intitule_des_textes[j].text)
                         except Exception:
-                            print("S erreur pour récupérer intitulé du texte à la", str(i-1)+"ème date, texte n°" + str(j+1))
+                            logger.error(f"S erreur pour récupérer intitulé du texte à la {i-1}ème date, texte n°{j+1}")
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                             continue
 
@@ -363,8 +361,7 @@ def main():
                             #print(lien_vers_dossier)
                             numero_du_texte = numero_du_texte[20:-5]
                         except Exception:
-                            print("S erreur pour récupérer lien", intitule_du_texte)
-                            print(" ")
+                            logger.error(f"S erreur pour récupérer lien {intitule_du_texte}\n")
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                             continue
 
@@ -378,7 +375,7 @@ def main():
                             # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
                             df_S.at[numero_du_texte,"flag_vu"] = 1
                             if df_S.at[numero_du_texte, "flag_tweeted"] == 1: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
-                                if verbose:print(numero_du_texte, "\t \t \t \t \t \t déjà tweeté")
+                                logger.debug(f"{numero_du_texte} \t \t \t \t \t \t déjà tweeté")
                                 continue
 
                         # si on arrive là c'est soit que c'est un nouveau texte dans la liste
@@ -429,17 +426,17 @@ def main():
                                     start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
                                     if "<li>Texte n°" in page_dossier[start_pos-4:start_pos+8]:
                                         # le pattern ressemble bien à celui d'un texte non encore publié
-                                        if verbose:print(numero_du_texte, "\t \t \t \t \t \t non pub")
+                                        logger.debug(f"{numero_du_texte} \t \t \t \t \t \t non pub")
                                         # donc on peut partir
                                         continue
                                         # par acquis de conscience, je pourrais vérifier que le lien vers le texte donne bien 404...
                                     elif "<li>Texte retiré" in page_dossier[start_pos-4:start_pos+12]:
                                         # traiter le cas d'un texte retiré comme celui ci : http://www.senat.fr/dossier-legislatif/ppl21-906.html
-                                        if verbose:print("texte retiré, voilà le lien vers le dossier législatif :", lien_vers_dossier)
+                                        logger.debug(f"texte retiré, voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                         continue
                                     else:
-                                        print("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien")
-                                        print("voilà le lien vers le dossier législatif :", lien_vers_dossier)
+                                        logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
+                                                       f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                         continue
 
                             borne_arriere = 26 # choisi un peu au pif, de manière à capturer le texte "Texte de la commission</a>"
@@ -457,21 +454,19 @@ def main():
 
                             elif 'nationale.fr' in page_dossier[ max_des_deux + borne_avant_test_AN : max_des_deux + borne_arriere ] :
                                 # La dernière version du texte est un texte de l'AN, on peut arrêter et passer au texte suivant
-                                if verbose:print(numero_du_texte, "\t \t \t \t \t \t lien AN")
+                                logger.debug(f"{numero_du_texte} \t \t \t \t \t \t lien AN")
 
                                 continue
                             else: # cas où ya rien
-                                print("c'est chelou, 'Texte</a>' ou 'Texte de la commission</a>' a bien été trouvé")
-                                print("mais on a pas trouvé de lien AN ou Sénat devant")
-                                print("voilà le lien vers le dossier législatif :", lien_vers_dossier)
+                                logger.warning("c'est chelou, 'Texte</a>' ou 'Texte de la commission</a>' a bien été trouvé"
+                                               "mais on a pas trouvé de lien AN ou Sénat devant"
+                                               f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                 continue
 
 
                         except Exception as erreur:
-                            print("S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte", lien_vers_dossier)
-                            print("print de l'erreur :")
-                            print(erreur)
-                            print(" ")
+                            logger.error(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier}"
+                                         "print de l'erreur : {erreur}")
                             continue
 
 
@@ -481,7 +476,7 @@ def main():
                         page_texte_S = requests.get(lien_vers_texte)
                         # si on trouve la phrase ci-dessous, c'est qu'on est sur la page 404 du Sénat
                         if "une erreur du Webmestre dans un lien" in page_texte_S.text:
-                            if verbose:print(numero_du_texte, "\t \t \t \t \t \t doc non pub")
+                            logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub")
                             continue # donc on peut passer au prochain texte
 
                         # sinon, c'est que le texte est publié donc on tweete
@@ -495,14 +490,11 @@ def main():
                             except Exception as err:
                                 if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                     df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                                print("Erreur lors du tweet de", texte_du_tweet)
-                                print(err)
-                                print("")
+                                logger.error("Erreur lors du tweet de {texte_du_tweet} : {err}")
                                 continue
                         # et on set flag tweeté = 1
                         df_S.at[numero_du_texte,"flag_tweeted"] = 1
-                        print("S -", texte_du_tweet)
-                        print(" ")
+                        logger.info(f"S - {texte_du_tweet}  ")
 
                 if enregistrer_quand_meme:
                     # dans le df_S, on supprime les lignes où vu = 0
@@ -518,7 +510,7 @@ def main():
             time.sleep(120)
 
         except Exception as err:
-            print(err)
+            logger.error(err)
             time.sleep(60)
 
 if __name__ == '__main__':
