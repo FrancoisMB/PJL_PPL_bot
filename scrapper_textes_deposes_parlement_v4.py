@@ -353,8 +353,8 @@ def main(
 
                     # et ensuite on scrape la page du texte lui même
                     page_texte_S = requests.get(lien_vers_texte)
-                    # si on trouve la phrase ci-dessous, c'est qu'on est sur la page 404 du Sénat
-                    if "une erreur du Webmestre dans un lien" in page_texte_S.text:
+                    # si on trouve ça c'est qu'on est sur la page 404 du Sénat
+                    if 400 <= page_texte_S.status_code < 500:
                         logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub")
                         continue # donc on peut passer au prochain texte
 
