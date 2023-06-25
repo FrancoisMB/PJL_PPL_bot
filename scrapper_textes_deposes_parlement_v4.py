@@ -75,40 +75,6 @@ def main():
     else:
         logger.info("Authentication OK")
 
-    tweet_size = 280 - 24
-
-    def formatage_texte(input_text):
-        input_text = input_text.strip()
-        input_text = re.sub(r"[Pp]rojet de loi de finances rectificative", "⚠️ #PLFR", input_text)
-        input_text = re.sub(r"[Pp]rojet de loi de finances", "⚠️ #PLF", input_text)
-
-        input_text = re.sub(r"[Pp]rojet de loi de financement de la [Ss][ée]curit[ée] sociale", "⚠️ #PLFSS", input_text)
-
-        input_text = re.sub(r"[Pp]rojet de loi de finances rectificative de la [Ss][ée]curit[ée] sociale", "⚠️ #PLFRSS", input_text)
-
-        input_text = input_text.replace('#PLFR', '#PLFℝ') # change le R en un R spécial un peu plus visible, qui est admis en hashtag twitter comme un R classique
-
-        input_text = re.sub(r"[Pp]roposition de loi", "PPL", input_text)
-        input_text = re.sub(r"[Pp]rojet de loi", "⚠️ PJL", input_text)
-        input_text = re.sub(r"[Pp]roposition de r[ée]solution", "PPR", input_text)
-
-        input_text = re.sub(r"(?:et|,) plusieurs de (?:ses|leurs) coll[èe]gues", "", input_text)
-        input_text = input_text.replace('après engagement de la procédure accélérée', '')
-
-        input_text = re.sub(r"\s+", " ", input_text)
-        input_text = re.sub(r"\s*,+", ",", input_text)
-
-        if len(input_text) > tweet_size:
-            input_text = input_text.replace(r"PPL organique", "PPLO")
-            input_text = input_text.replace(r"PJL organique", "PJLO")
-            input_text = input_text.replace(r"PPL constitutionnelle", "PPLC")
-            input_text = input_text.replace(r"PJL constitutionnelle", "PJLC")
-
-        if len(input_text) <= tweet_size:
-            return input_text +" "
-        else:
-            return input_text[:tweet_size-1]+"… "
-
     # Configuration
 
     send_to_twitter = True
@@ -226,7 +192,7 @@ def main():
                         logger.error(f"AN erreur pour récupérer intitulé du texte {numero_du_texte}\n")
                         continue  # permet de ne pas mettre un truc sans intitule_du_texte dans liste_textes
 
-                    intitule_du_texte = formatage_texte(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
+                    intitule_du_texte = format_title(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
 
                     texte_du_tweet = intitule_du_texte + lien_vers_texte
 
@@ -394,7 +360,7 @@ def main():
                         continue # donc on peut passer au prochain texte
 
                     # sinon, c'est que le texte est publié donc on tweete
-                    intitule_du_texte = formatage_texte(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
+                    intitule_du_texte = format_title(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
 
                     texte_du_tweet = intitule_du_texte + lien_vers_texte
 
@@ -426,6 +392,42 @@ def main():
         except Exception as err:
             logger.error(err)
             time.sleep(60)
+
+
+_tweet_size = 280 - 24
+
+def format_title(input_text):
+    input_text = input_text.strip()
+    input_text = re.sub(r"[Pp]rojet de loi de finances rectificative", "⚠️ #PLFR", input_text)
+    input_text = re.sub(r"[Pp]rojet de loi de finances", "⚠️ #PLF", input_text)
+
+    input_text = re.sub(r"[Pp]rojet de loi de financement de la [Ss][ée]curit[ée] sociale", "⚠️ #PLFSS", input_text)
+
+    input_text = re.sub(r"[Pp]rojet de loi de finances rectificative de la [Ss][ée]curit[ée] sociale", "⚠️ #PLFRSS", input_text)
+
+    input_text = input_text.replace('#PLFR', '#PLFℝ') # change le R en un R spécial un peu plus visible, qui est admis en hashtag twitter comme un R classique
+
+    input_text = re.sub(r"[Pp]roposition de loi", "PPL", input_text)
+    input_text = re.sub(r"[Pp]rojet de loi", "⚠️ PJL", input_text)
+    input_text = re.sub(r"[Pp]roposition de r[ée]solution", "PPR", input_text)
+
+    input_text = re.sub(r"(?:et|,) plusieurs de (?:ses|leurs) coll[èe]gues", "", input_text)
+    input_text = input_text.replace('après engagement de la procédure accélérée', '')
+
+    input_text = re.sub(r"\s+", " ", input_text)
+    input_text = re.sub(r"\s*,+", ",", input_text)
+
+    if len(input_text) > _tweet_size:
+        input_text = input_text.replace(r"PPL organique", "PPLO")
+        input_text = input_text.replace(r"PJL organique", "PJLO")
+        input_text = input_text.replace(r"PPL constitutionnelle", "PPLC")
+        input_text = input_text.replace(r"PJL constitutionnelle", "PJLC")
+
+    if len(input_text) <= _tweet_size:
+        return input_text +" "
+    else:
+        return input_text[:_tweet_size-1]+"… "
+
 
 if __name__ == '__main__':
     main()
