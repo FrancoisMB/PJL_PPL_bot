@@ -292,7 +292,7 @@ def main():
                             numero_du_texte = intit.find("p/a").attrib["href"]
                             lien_vers_dossier = "http://www.senat.fr" + numero_du_texte
                             #print(lien_vers_dossier)
-                            numero_du_texte = numero_du_texte[20:-5]
+                            numero_du_texte = numero_du_texte.rpartition("/")[2].partition(".")[0]
                         except Exception:
                             logger.error(f"S erreur pour récupérer lien {intitule_du_texte}\n")
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
