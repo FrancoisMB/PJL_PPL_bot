@@ -237,7 +237,7 @@ def main():
                         except Exception as err:
                             if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                 df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                            logger.error("Erreur lors du tweet de {texte_du_tweet} :\n{err}\n")
+                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} :\n{err}\n")
                             continue
                     # et on set flag tweeté = 1
                     df_AN.at[numero_du_texte,"flag_tweeted"] = 1
