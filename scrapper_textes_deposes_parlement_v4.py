@@ -114,10 +114,8 @@ def main():
     enregistrer_quand_meme = True
 
     scrap_AN = True
-    nb_de_textes_a_scrapper = 149
-
     scrap_Senat = True
-    nb_de_dates_a_scrapper = 25
+    nb_de_textes_a_scrapper = 149
 
 
     while True:
@@ -276,22 +274,22 @@ def main():
                 page_Senat = requests.get(url_Senat)
                 tree = html.fromstring(page_Senat.content)
 
-                nb_de_dates_a_scrapper = nb_de_dates_a_scrapper
-                for i in range(2, nb_de_dates_a_scrapper+1):
-                    liste_intitule_des_textes = tree.xpath('/html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li['+ str(i) +']/ul/li/a')
-                    for j, intit in enumerate(liste_intitule_des_textes, start=1):
+                liste_des_textes = (el for i in (1, 2) for el in tree.xpath(f"/html/body/main/article/div[1]/div[1]/div[1]/div[{i}]/div[1]/div[1]/ul/li"))
+                # tree.xpath('/html/body/main/article/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/ul/li')[j].findtext("h2") # prochainement en séance publique
+                # tree.xpath('/html/body/main/article/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/ul/li')[j].findtext("h2") # liste chrono des autres
+                for j, intit in zip(range(1, nb_de_textes_a_scrapper+1), liste_des_textes):
                         time.sleep(0.01)
 
                         try:
-                            intitule_du_texte = intit.text
+                            intitule_du_texte = intit.findtext("h2")
                             #print(intit.text)
                         except Exception:
-                            logger.error(f"S erreur pour récupérer intitulé du texte à la {i-1}ème date, texte n°{j}")
+                            logger.error(f"S erreur pour récupérer intitulé du texte n°{j}")
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                             continue
 
                         try:
-                            numero_du_texte = intit.attrib["href"]
+                            numero_du_texte = intit.find("p/a").attrib["href"]
                             lien_vers_dossier = "http://www.senat.fr" + numero_du_texte
                             #print(lien_vers_dossier)
                             numero_du_texte = numero_du_texte[20:-5]
