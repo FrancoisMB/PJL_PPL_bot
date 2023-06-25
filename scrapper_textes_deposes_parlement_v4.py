@@ -278,154 +278,154 @@ def main():
                 # tree.xpath('/html/body/main/article/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/ul/li')[j].findtext("h2") # prochainement en séance publique
                 # tree.xpath('/html/body/main/article/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/ul/li')[j].findtext("h2") # liste chrono des autres
                 for j, intit in zip(range(1, nb_de_textes_a_scrapper+1), liste_des_textes):
-                        time.sleep(0.01)
+                    time.sleep(0.01)
 
-                        try:
-                            intitule_du_texte = intit.findtext("h2")
-                            #print(intit.text)
-                        except Exception:
-                            logger.error(f"S erreur pour récupérer intitulé du texte n°{j}")
-                            # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
+                    try:
+                        intitule_du_texte = intit.findtext("h2")
+                        #print(intit.text)
+                    except Exception:
+                        logger.error(f"S erreur pour récupérer intitulé du texte n°{j}")
+                        # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
+                        continue
+
+                    try:
+                        numero_du_texte = intit.find("p/a").attrib["href"]
+                        lien_vers_dossier = "http://www.senat.fr" + numero_du_texte
+                        #print(lien_vers_dossier)
+                        numero_du_texte = numero_du_texte.rpartition("/")[2].partition(".")[0]
+                    except Exception:
+                        logger.error(f"S erreur pour récupérer lien {intitule_du_texte}\n")
+                        # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
+                        continue
+
+                    #numero_du_texte = "4723"
+                    if numero_du_texte not in df_S.index:  # on regarde si son numéro de texte est dans le df_S
+                        # Non : c'est pas dans le df_S on le met dedans (avec la date d'ajout ?) et on on met le flag "tweeté" = 0 et vu = 1
+                        #df_S = df_S.append(pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)) # TODO : si la ligne suivante ne produit pas de bugs pendant suffisamment de temps, alors celle ci peut être supprimée (car deprecated)
+                        # df_S = pandas.concat([df_S, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
+                        df_S.loc[numero_du_texte] = dict(flag_tweeted=0, flag_vu=1)
+
+                    else:
+                        # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
+                        df_S.at[numero_du_texte,"flag_vu"] = 1
+                        if df_S.at[numero_du_texte, "flag_tweeted"]: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
+                            logger.debug(f"{numero_du_texte} \t \t \t \t \t \t déjà tweeté")
                             continue
 
-                        try:
-                            numero_du_texte = intit.find("p/a").attrib["href"]
-                            lien_vers_dossier = "http://www.senat.fr" + numero_du_texte
-                            #print(lien_vers_dossier)
-                            numero_du_texte = numero_du_texte.rpartition("/")[2].partition(".")[0]
-                        except Exception:
-                            logger.error(f"S erreur pour récupérer lien {intitule_du_texte}\n")
-                            # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
+                    # si on arrive là c'est soit que c'est un nouveau texte dans la liste
+                    # soit que c'est un texte déjà vu dans la liste, mais pas encore tweeté
+
+                    # du coup on scrape la page du DOSSIER pour récupérer le dernier état du texte
+
+
+                    # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/ppl19-629.html" # ici, dernier texte = commission AN
+
+                    # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/pjl20-764.html" # ici, dernier texte = commission Sénat
+
+                    # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/ppl20-780.html" # ici, CMP
+
+                    # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/ppl21-183.html" # ici, pas de texte publié
+
+                    try:
+                        page_dossier = requests.get(lien_vers_dossier)
+                        page_dossier = ' '.join(page_dossier.text.split())
+
+                        # A FAIRE:
+                        # trouver l'occurrence la plus en bas de "Texte" (avec un lien, parce qu'il existe le mot texte sans lien) ou de "Texte de la commission"
+                        # regarder le href, si c'est site de l'AN
+                            # continue (on s'arrête)
+                        # si c'est site du Sénat, récupérer le href, qui est le href de la dernière version du texte
+                            # (qu'on ne mettra pas dans le df_S, on fonctionne qu'avec le numero d'origine du texte, qui est celui du dossier législatif)
+                        # parfois ya pas de lien, comme ici, pour l'instant : http://www.senat.fr/dossier-legislatif/ppl21-181.html
+                        # dans ce cas => continue
+
+                        # NB : je ne sais pas ce qu'il se passe en cas de CMP, traiter aussi ce cas
+
+
+
+                        liste_start_mot_texte = [m.start() for m in re.finditer(r'Texte(?: de la commission)?<\/a>', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
+
+                        # le if ci-dessous sert à gérer le cas où il y a "Texte n°" sur la page, sans lien : texte pas encore publié
+                        # le bloc pourrait PEUT ETRE être simplifié en ajoutant ça au dessus :
+                        # liste_start_mot_texte_n = [m.start() for m in re.finditer('Texte n°', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
+                        # en mettant en-dessous du if :
+                        # max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte + liste_start_mot_texte_n)
+                        # et ce serait ensuite géré comme troisième cas du IF/ELIF/ELSE qui suit.  Pas sûr. A voir...
+                        if not liste_start_mot_texte: # signifie que les deux listes étaient vides
+                            # du coup par curiosité, je teste qu'on a bien écrit "Texte n° XXX" sans lien
+                            # en fait on cherche "Texte n" à cause des problèmes d'encodage du caractère "°"
+                            start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
+                            if "<li>Texte n" in page_dossier[start_pos-4:start_pos+8]:
+                                # le pattern ressemble bien à celui d'un texte non encore publié
+                                logger.debug(f"{numero_du_texte} \t \t \t \t \t \t non pub")
+                                # donc on peut partir
+                                continue
+                                # par acquis de conscience, je pourrais vérifier que le lien vers le texte donne bien 404...
+                            elif "<li>Texte retir" in page_dossier[start_pos-4:start_pos+12]:
+                                # traiter le cas d'un texte retiré comme celui ci : http://www.senat.fr/dossier-legislatif/ppl21-906.html
+                                logger.debug(f"texte retiré, voilà le lien vers le dossier législatif : {lien_vers_dossier}")
+                                continue
+                            else:
+                                logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
+                                                f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
+                                continue
+                        max_des_deux = liste_start_mot_texte[-1] # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
+
+                        borne_arriere = 26 # choisi un peu au pif, de manière à capturer le texte "Texte de la commission</a>"
+
+                        # SI le lien est un lien du Sénat, il fera toujours 30 caractères avant le mot "Texte" : <a href="/leg/ppl21-151.html">
+                        # Si le lien est de l'AN, sa taille peut varier
+                        borne_avant_test_Senat = -30
+                        borne_avant_test_AN = -100
+
+                        if "href='/leg/" in page_dossier[ max_des_deux + borne_avant_test_Senat : max_des_deux + borne_arriere ]:
+                            # si on est là, c'est qu'on a un lien Sénat
+                            borne_avant = -21
+                            borne_arriere = -2
+                            lien_vers_texte = "http://www.senat.fr" + page_dossier[ max_des_deux + borne_avant : max_des_deux + borne_arriere ]
+
+                        elif 'nationale.fr' in page_dossier[ max_des_deux + borne_avant_test_AN : max_des_deux + borne_arriere ] :
+                            # La dernière version du texte est un texte de l'AN, on peut arrêter et passer au texte suivant
+                            logger.debug(f"{numero_du_texte} \t \t \t \t \t \t lien AN")
+
                             continue
-
-                        #numero_du_texte = "4723"
-                        if numero_du_texte not in df_S.index:  # on regarde si son numéro de texte est dans le df_S
-                            # Non : c'est pas dans le df_S on le met dedans (avec la date d'ajout ?) et on on met le flag "tweeté" = 0 et vu = 1
-                            #df_S = df_S.append(pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)) # TODO : si la ligne suivante ne produit pas de bugs pendant suffisamment de temps, alors celle ci peut être supprimée (car deprecated)
-                            # df_S = pandas.concat([df_S, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
-                            df_S.loc[numero_du_texte] = dict(flag_tweeted=0, flag_vu=1)
-
-                        else:
-                            # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
-                            df_S.at[numero_du_texte,"flag_vu"] = 1
-                            if df_S.at[numero_du_texte, "flag_tweeted"]: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
-                                logger.debug(f"{numero_du_texte} \t \t \t \t \t \t déjà tweeté")
-                                continue
-
-                        # si on arrive là c'est soit que c'est un nouveau texte dans la liste
-                        # soit que c'est un texte déjà vu dans la liste, mais pas encore tweeté
-
-                        # du coup on scrape la page du DOSSIER pour récupérer le dernier état du texte
-
-
-                        # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/ppl19-629.html" # ici, dernier texte = commission AN
-
-                        # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/pjl20-764.html" # ici, dernier texte = commission Sénat
-
-                        # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/ppl20-780.html" # ici, CMP
-
-                        # lien_vers_dossier = "http://www.senat.fr/dossier-legislatif/ppl21-183.html" # ici, pas de texte publié
-
-                        try:
-                            page_dossier = requests.get(lien_vers_dossier)
-                            page_dossier = ' '.join(page_dossier.text.split())
-
-                            # A FAIRE:
-                            # trouver l'occurrence la plus en bas de "Texte" (avec un lien, parce qu'il existe le mot texte sans lien) ou de "Texte de la commission"
-                            # regarder le href, si c'est site de l'AN
-                                # continue (on s'arrête)
-                            # si c'est site du Sénat, récupérer le href, qui est le href de la dernière version du texte
-                                # (qu'on ne mettra pas dans le df_S, on fonctionne qu'avec le numero d'origine du texte, qui est celui du dossier législatif)
-                            # parfois ya pas de lien, comme ici, pour l'instant : http://www.senat.fr/dossier-legislatif/ppl21-181.html
-                            # dans ce cas => continue
-
-                            # NB : je ne sais pas ce qu'il se passe en cas de CMP, traiter aussi ce cas
-
-
-
-                            liste_start_mot_texte = [m.start() for m in re.finditer(r'Texte(?: de la commission)?<\/a>', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
-
-                            # le if ci-dessous sert à gérer le cas où il y a "Texte n°" sur la page, sans lien : texte pas encore publié
-                            # le bloc pourrait PEUT ETRE être simplifié en ajoutant ça au dessus :
-                            # liste_start_mot_texte_n = [m.start() for m in re.finditer('Texte n°', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
-                            # en mettant en-dessous du if :
-                            # max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte + liste_start_mot_texte_n)
-                            # et ce serait ensuite géré comme troisième cas du IF/ELIF/ELSE qui suit.  Pas sûr. A voir...
-                            if not liste_start_mot_texte: # signifie que les deux listes étaient vides
-                                # du coup par curiosité, je teste qu'on a bien écrit "Texte n° XXX" sans lien
-                                # en fait on cherche "Texte n" à cause des problèmes d'encodage du caractère "°"
-                                start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
-                                if "<li>Texte n" in page_dossier[start_pos-4:start_pos+8]:
-                                    # le pattern ressemble bien à celui d'un texte non encore publié
-                                    logger.debug(f"{numero_du_texte} \t \t \t \t \t \t non pub")
-                                    # donc on peut partir
-                                    continue
-                                    # par acquis de conscience, je pourrais vérifier que le lien vers le texte donne bien 404...
-                                elif "<li>Texte retir" in page_dossier[start_pos-4:start_pos+12]:
-                                    # traiter le cas d'un texte retiré comme celui ci : http://www.senat.fr/dossier-legislatif/ppl21-906.html
-                                    logger.debug(f"texte retiré, voilà le lien vers le dossier législatif : {lien_vers_dossier}")
-                                    continue
-                                else:
-                                    logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
-                                                    f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
-                                    continue
-                            max_des_deux = liste_start_mot_texte[-1] # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
-
-                            borne_arriere = 26 # choisi un peu au pif, de manière à capturer le texte "Texte de la commission</a>"
-
-                            # SI le lien est un lien du Sénat, il fera toujours 30 caractères avant le mot "Texte" : <a href="/leg/ppl21-151.html">
-                            # Si le lien est de l'AN, sa taille peut varier
-                            borne_avant_test_Senat = -30
-                            borne_avant_test_AN = -100
-
-                            if "href='/leg/" in page_dossier[ max_des_deux + borne_avant_test_Senat : max_des_deux + borne_arriere ]:
-                                # si on est là, c'est qu'on a un lien Sénat
-                                borne_avant = -21
-                                borne_arriere = -2
-                                lien_vers_texte = "http://www.senat.fr" + page_dossier[ max_des_deux + borne_avant : max_des_deux + borne_arriere ]
-
-                            elif 'nationale.fr' in page_dossier[ max_des_deux + borne_avant_test_AN : max_des_deux + borne_arriere ] :
-                                # La dernière version du texte est un texte de l'AN, on peut arrêter et passer au texte suivant
-                                logger.debug(f"{numero_du_texte} \t \t \t \t \t \t lien AN")
-
-                                continue
-                            else: # cas où ya rien
-                                logger.warning("c'est chelou, 'Texte</a>' ou 'Texte de la commission</a>' a bien été trouvé "
-                                               "mais on a pas trouvé de lien AN ou Sénat devant, "
-                                               f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
-                                continue
-
-
-                        except Exception as erreur:
-                            logger.error(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier} :\n{erreur}")
+                        else: # cas où ya rien
+                            logger.warning("c'est chelou, 'Texte</a>' ou 'Texte de la commission</a>' a bien été trouvé "
+                                            "mais on a pas trouvé de lien AN ou Sénat devant, "
+                                            f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                             continue
 
 
-                        # lien_vers_texte = "http://www.senat.fr/leg/ppl21-181.html"   # pour les tests
+                    except Exception as erreur:
+                        logger.error(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier} :\n{erreur}")
+                        continue
 
-                        # et ensuite on scrape la page du texte lui même
-                        page_texte_S = requests.get(lien_vers_texte)
-                        # si on trouve la phrase ci-dessous, c'est qu'on est sur la page 404 du Sénat
-                        if "une erreur du Webmestre dans un lien" in page_texte_S.text:
-                            logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub")
-                            continue # donc on peut passer au prochain texte
 
-                        # sinon, c'est que le texte est publié donc on tweete
-                        intitule_du_texte = formatage_texte(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
+                    # lien_vers_texte = "http://www.senat.fr/leg/ppl21-181.html"   # pour les tests
 
-                        texte_du_tweet = intitule_du_texte + lien_vers_texte
+                    # et ensuite on scrape la page du texte lui même
+                    page_texte_S = requests.get(lien_vers_texte)
+                    # si on trouve la phrase ci-dessous, c'est qu'on est sur la page 404 du Sénat
+                    if "une erreur du Webmestre dans un lien" in page_texte_S.text:
+                        logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub")
+                        continue # donc on peut passer au prochain texte
 
-                        if send_to_twitter:
-                            try:
-                                tweeted = api.update_status(texte_du_tweet)
-                            except Exception as err:
-                                if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
-                                    df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                                logger.error(f"Erreur lors du tweet de {texte_du_tweet} : {err}")
-                                continue
-                        # et on set flag tweeté = 1
-                        df_S.at[numero_du_texte,"flag_tweeted"] = 1
-                        logger.info(f"S - {texte_du_tweet}  ")
+                    # sinon, c'est que le texte est publié donc on tweete
+                    intitule_du_texte = formatage_texte(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
+
+                    texte_du_tweet = intitule_du_texte + lien_vers_texte
+
+                    if send_to_twitter:
+                        try:
+                            tweeted = api.update_status(texte_du_tweet)
+                        except Exception as err:
+                            if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
+                                df_AN.at[numero_du_texte,"flag_tweeted"] = 1
+                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} : {err}")
+                            continue
+                    # et on set flag tweeté = 1
+                    df_S.at[numero_du_texte,"flag_tweeted"] = 1
+                    logger.info(f"S - {texte_du_tweet}  ")
 
                 if enregistrer_quand_meme:
                     # dans le df_S, on supprime les lignes où vu = 0
