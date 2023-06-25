@@ -78,12 +78,6 @@ def main():
     tweet_size = 280 - 24
 
     def formatage_texte(input_text):
-        if len(input_text) > tweet_size:
-            input_text = re.sub(r"[Pp]roposition de loi organique", "PPLO", input_text)
-            input_text = re.sub(r"[Pp]rojet de loi organique", "⚠️ PJLO", input_text)
-            input_text = re.sub(r"[Pp]roposition de loi constitutionnelle", "PPLC", input_text)
-            input_text = re.sub(r"[Pp]rojet de loi constitutionnelle", "⚠️ PJLC", input_text)
-
         input_text = re.sub(r"[Pp]rojet de loi de finances rectificative", "⚠️ #PLFR", input_text)
         input_text = re.sub(r"[Pp]rojet de loi de finances", "⚠️ #PLF", input_text)
 
@@ -102,6 +96,12 @@ def main():
 
         input_text = re.sub(r"\s*,+", ",", input_text)
         input_text = re.sub(r"\s+", " ", input_text)
+
+        if len(input_text) > tweet_size:
+            input_text = input_text.replace(r"PPL organique", "PPLO")
+            input_text = input_text.replace(r"PJL organique", "PJLO")
+            input_text = input_text.replace(r"PPL constitutionnelle", "PPLC")
+            input_text = input_text.replace(r"PJL constitutionnelle", "PJLC")
 
         if len(input_text) <= tweet_size:
             return input_text +" "
