@@ -437,8 +437,8 @@ def main():
 
     #%%
             print(".", end="")
-            if not send_to_twitter:
-                break
+            # if not send_to_twitter:
+            #     break
             time.sleep(120)
 
         except Exception as err:
