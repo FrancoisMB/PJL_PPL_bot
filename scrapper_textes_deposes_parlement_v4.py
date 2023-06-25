@@ -10,6 +10,10 @@ http://www.senat.fr/dossiers-legislatifs/textes-recents.html
 @author: Francois
 """
 
+import os, re, time
+from pathlib import Path
+from lxml import html
+import tweepy, requests, pandas
 
 # on initie un DF      num text | date d'ajout | tweeté
 # on charge le csv de mémoire dedans
@@ -40,10 +44,6 @@ http://www.senat.fr/dossiers-legislatifs/textes-recents.html
 #        + à la toute fin, si un fichier a été créé, print un message pour le dire
 
 def main():
-
-    from pathlib import Path
-    from lxml import html
-    import os, time, tweepy, requests, re, pandas
 
     # set le dossier de travail à l'endroit où se trouve
     path_wd = r"D:\Code\Code_Python\scrapper_textes_deposes_parlement"
