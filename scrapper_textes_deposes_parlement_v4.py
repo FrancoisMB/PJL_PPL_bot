@@ -166,20 +166,18 @@ def main():
 
     #%%
 
-    send_to_twitter = 1
-    enregistrer_quand_meme = 1
+    send_to_twitter = True
+    enregistrer_quand_meme = True
     verbose = 0
 
-    scrap_AN = 1
+    scrap_AN = True
     nb_de_textes_a_scrapper = 149
 
-    scrap_Senat = 1
+    scrap_Senat = True
     nb_de_dates_a_scrapper = 25
 
 
     while True:
-        pass
-
         try:
         #%%
 
@@ -297,7 +295,7 @@ def main():
 
                     texte_du_tweet = intitule_du_texte + lien_vers_texte
 
-                    if send_to_twitter == True:
+                    if send_to_twitter:
                         try:
                             tweeted = api.update_status(texte_du_tweet)
                         except Exception as err:
@@ -491,7 +489,7 @@ def main():
 
                         texte_du_tweet = intitule_du_texte + lien_vers_texte
 
-                        if send_to_twitter == True:
+                        if send_to_twitter:
                             try:
                                 tweeted = api.update_status(texte_du_tweet)
                             except Exception as err:
@@ -515,7 +513,7 @@ def main():
 
     #%%
             print(".", end="")
-            if send_to_twitter == 0:
+            if not send_to_twitter:
                 break
             time.sleep(120)
 
