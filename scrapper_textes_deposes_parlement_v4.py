@@ -78,6 +78,7 @@ def main():
     tweet_size = 280 - 24
 
     def formatage_texte(input_text):
+        input_text = input_text.strip()
         input_text = re.sub(r"[Pp]rojet de loi de finances rectificative", "⚠️ #PLFR", input_text)
         input_text = re.sub(r"[Pp]rojet de loi de finances", "⚠️ #PLF", input_text)
 
