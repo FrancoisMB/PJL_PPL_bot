@@ -240,7 +240,7 @@ def main():
                         continue
 
                     #numero_du_texte = "4723"
-                    if not(numero_du_texte in df_AN.index):  # on regarde si son numéro de texte est dans le df_AN
+                    if numero_du_texte not in df_AN.index:  # on regarde si son numéro de texte est dans le df_AN
                         # Non : c'est pas dans le df_AN on le met dedans (avec la date d'ajout ?) et on on met le flag "tweeté" = 0 et vu = 1
                         #df_AN = df_AN.append(pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)) # TODO : si la ligne suivante ne produit pas de bugs pendant suffisamment de temps, alors celle ci peut être supprimée (car deprecated)
                         df_AN = pandas.concat([df_AN, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
