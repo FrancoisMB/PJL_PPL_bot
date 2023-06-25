@@ -146,7 +146,7 @@ def main():
             try:
                 df_S = pandas.read_csv(nom_fichier_S, index_col=0)
             except Exception:
-                logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
+                logger.warning("PB dans l'import du précédent fichier S, un nouveau a du être recréé")
                 df_S = pandas.DataFrame(columns=["flag_tweeted"])
 
             # on ajoute une nouvelle colonne vide flag_vu
