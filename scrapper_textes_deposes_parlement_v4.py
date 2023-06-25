@@ -229,11 +229,8 @@ def main():
                 page_AN = requests.get(url_AN)
                 tree = html.fromstring(page_AN.content)
 
-                i = 1
-
                 nb_de_textes_a_scrapper = nb_de_textes_a_scrapper
-                while i <= nb_de_textes_a_scrapper: # pour chaque entrée dans la page de la liste des textes de l'AN
-                    i = i+1
+                for i in range(2, nb_de_textes_a_scrapper+1): # pour chaque entrée dans la page de la liste des textes de l'AN
                     try: # on récupère son numéro de texte
                         base_xpath = '/html/body/div[1]/div[2]/div/div/section/div/article/div/div[2]/div[2]/ul/li['+ str(i) +']'
                         numero_du_texte = str(tree.xpath(base_xpath+'/h3/text()')[0])
@@ -338,25 +335,22 @@ def main():
                 page_Senat = requests.get(url_Senat)
                 tree = html.fromstring(page_Senat.content)
 
-                i = 1
-
                 nb_de_dates_a_scrapper = nb_de_dates_a_scrapper
-                while i <= nb_de_dates_a_scrapper:
-                    i+=1
+                for i in range(2, nb_de_dates_a_scrapper+1):
                     liste_intitule_des_textes = tree.xpath('/html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li['+ str(i) +']/ul/li/a')
-                    for j in range(len(liste_intitule_des_textes)):
+                    for j, intit in enumerate(liste_intitule_des_textes, start=1):
                         time.sleep(0.01)
 
                         try:
-                            intitule_du_texte = liste_intitule_des_textes[j].text
-                            #print(liste_intitule_des_textes[j].text)
+                            intitule_du_texte = intit.text
+                            #print(intit.text)
                         except Exception:
-                            logger.error(f"S erreur pour récupérer intitulé du texte à la {i-1}ème date, texte n°{j+1}")
+                            logger.error(f"S erreur pour récupérer intitulé du texte à la {i-1}ème date, texte n°{j}")
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                             continue
 
                         try:
-                            numero_du_texte = liste_intitule_des_textes[j].attrib["href"]
+                            numero_du_texte = intit.attrib["href"]
                             lien_vers_dossier = "http://www.senat.fr" + numero_du_texte
                             #print(lien_vers_dossier)
                             numero_du_texte = numero_du_texte[20:-5]
@@ -366,7 +360,7 @@ def main():
                             continue
 
                         #numero_du_texte = "4723"
-                        if not(numero_du_texte in df_S.index):  # on regarde si son numéro de texte est dans le df_S
+                        if numero_du_texte not in df_S.index:  # on regarde si son numéro de texte est dans le df_S
                             # Non : c'est pas dans le df_S on le met dedans (avec la date d'ajout ?) et on on met le flag "tweeté" = 0 et vu = 1
                             #df_S = df_S.append(pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)) # TODO : si la ligne suivante ne produit pas de bugs pendant suffisamment de temps, alors celle ci peut être supprimée (car deprecated)
                             df_S = pandas.concat([df_S, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
@@ -418,26 +412,24 @@ def main():
                             # en mettant dans le try ci dessous :
                             # max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte + liste_start_mot_texte_n)
                             # et ce serait ensuite géré comme troisième cas du IF/ELIF/ELSE qui suit.  Pas sûr. A voir...
-                            try:
-                                max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte) # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
-                            except ValueError as e:
-                                if str(e) == "max() arg is an empty sequence": # signifie que les deux listes étaient vides
-                                    # du coup par curiosité, je teste qu'on a bien écrit "Texte n° XXX" sans lien
-                                    start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
-                                    if "<li>Texte n°" in page_dossier[start_pos-4:start_pos+8]:
-                                        # le pattern ressemble bien à celui d'un texte non encore publié
-                                        logger.debug(f"{numero_du_texte} \t \t \t \t \t \t non pub")
-                                        # donc on peut partir
-                                        continue
-                                        # par acquis de conscience, je pourrais vérifier que le lien vers le texte donne bien 404...
-                                    elif "<li>Texte retiré" in page_dossier[start_pos-4:start_pos+12]:
-                                        # traiter le cas d'un texte retiré comme celui ci : http://www.senat.fr/dossier-legislatif/ppl21-906.html
-                                        logger.debug(f"texte retiré, voilà le lien vers le dossier législatif : {lien_vers_dossier}")
-                                        continue
-                                    else:
-                                        logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
-                                                       f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
-                                        continue
+                            if not (liste_start_mot_texte or liste_start_mot_texte_commission): # signifie que les deux listes étaient vides
+                                # du coup par curiosité, je teste qu'on a bien écrit "Texte n° XXX" sans lien
+                                start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
+                                if "<li>Texte n°" in page_dossier[start_pos-4:start_pos+8]:
+                                    # le pattern ressemble bien à celui d'un texte non encore publié
+                                    logger.debug(f"{numero_du_texte} \t \t \t \t \t \t non pub")
+                                    # donc on peut partir
+                                    continue
+                                    # par acquis de conscience, je pourrais vérifier que le lien vers le texte donne bien 404...
+                                elif "<li>Texte retiré" in page_dossier[start_pos-4:start_pos+12]:
+                                    # traiter le cas d'un texte retiré comme celui ci : http://www.senat.fr/dossier-legislatif/ppl21-906.html
+                                    logger.debug(f"texte retiré, voilà le lien vers le dossier législatif : {lien_vers_dossier}")
+                                    continue
+                                else:
+                                    logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
+                                                    f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
+                                    continue
+                            max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte) # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
 
                             borne_arriere = 26 # choisi un peu au pif, de manière à capturer le texte "Texte de la commission</a>"
 
