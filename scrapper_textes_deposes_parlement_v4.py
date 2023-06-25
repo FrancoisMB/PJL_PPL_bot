@@ -354,14 +354,15 @@ def main():
                             # et ce serait ensuite géré comme troisième cas du IF/ELIF/ELSE qui suit.  Pas sûr. A voir...
                             if not (liste_start_mot_texte or liste_start_mot_texte_commission): # signifie que les deux listes étaient vides
                                 # du coup par curiosité, je teste qu'on a bien écrit "Texte n° XXX" sans lien
+                                # en fait on cherche "Texte n" à cause des problèmes d'encodage du caractère "°"
                                 start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
-                                if "<li>Texte n°" in page_dossier[start_pos-4:start_pos+8]:
+                                if "<li>Texte n" in page_dossier[start_pos-4:start_pos+8]:
                                     # le pattern ressemble bien à celui d'un texte non encore publié
                                     logger.debug(f"{numero_du_texte} \t \t \t \t \t \t non pub")
                                     # donc on peut partir
                                     continue
                                     # par acquis de conscience, je pourrais vérifier que le lien vers le texte donne bien 404...
-                                elif "<li>Texte retiré" in page_dossier[start_pos-4:start_pos+12]:
+                                elif "<li>Texte retir" in page_dossier[start_pos-4:start_pos+12]:
                                     # traiter le cas d'un texte retiré comme celui ci : http://www.senat.fr/dossier-legislatif/ppl21-906.html
                                     logger.debug(f"texte retiré, voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                     continue
