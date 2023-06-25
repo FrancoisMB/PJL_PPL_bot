@@ -342,16 +342,15 @@ def main():
 
 
 
-                            liste_start_mot_texte = [m.start() for m in re.finditer('Texte</a>', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
-                            liste_start_mot_texte_commission = [m.start() for m in re.finditer('Texte de la commission</a>', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
+                            liste_start_mot_texte = [m.start() for m in re.finditer(r'Texte(?: de la commission)?<\/a>', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
 
-                            # le bloc try/except ci-dessous sert à gérer le cas où il y a "Texte n°" sur la page, sans lien : texte pas encore publié
+                            # le if ci-dessous sert à gérer le cas où il y a "Texte n°" sur la page, sans lien : texte pas encore publié
                             # le bloc pourrait PEUT ETRE être simplifié en ajoutant ça au dessus :
                             # liste_start_mot_texte_n = [m.start() for m in re.finditer('Texte n°', page_dossier)] # retourne toutes les positions de la première lettre des occurrences du mot "Texte"
-                            # en mettant dans le try ci dessous :
+                            # en mettant en-dessous du if :
                             # max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte + liste_start_mot_texte_n)
                             # et ce serait ensuite géré comme troisième cas du IF/ELIF/ELSE qui suit.  Pas sûr. A voir...
-                            if not (liste_start_mot_texte or liste_start_mot_texte_commission): # signifie que les deux listes étaient vides
+                            if not liste_start_mot_texte: # signifie que les deux listes étaient vides
                                 # du coup par curiosité, je teste qu'on a bien écrit "Texte n° XXX" sans lien
                                 # en fait on cherche "Texte n" à cause des problèmes d'encodage du caractère "°"
                                 start_pos = [m.start() for m in re.finditer('Texte', page_dossier)][-1]
@@ -369,7 +368,7 @@ def main():
                                     logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
                                                     f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                     continue
-                            max_des_deux = max(liste_start_mot_texte_commission[-1], liste_start_mot_texte[-1]) # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
+                            max_des_deux = liste_start_mot_texte[-1] # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
 
                             borne_arriere = 26 # choisi un peu au pif, de manière à capturer le texte "Texte de la commission</a>"
 
