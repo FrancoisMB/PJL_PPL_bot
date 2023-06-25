@@ -185,7 +185,8 @@ def main():
                     if numero_du_texte not in df_AN.index:  # on regarde si son numéro de texte est dans le df_AN
                         # Non : c'est pas dans le df_AN on le met dedans (avec la date d'ajout ?) et on on met le flag "tweeté" = 0 et vu = 1
                         #df_AN = df_AN.append(pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)) # TODO : si la ligne suivante ne produit pas de bugs pendant suffisamment de temps, alors celle ci peut être supprimée (car deprecated)
-                        df_AN = pandas.concat([df_AN, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
+                        # df_AN = pandas.concat([df_AN, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
+                        df_AN.loc[numero_du_texte] = dict(flag_tweeted=0, flag_vu=1)
 
                     else:
                         # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
@@ -303,7 +304,8 @@ def main():
                         if numero_du_texte not in df_S.index:  # on regarde si son numéro de texte est dans le df_S
                             # Non : c'est pas dans le df_S on le met dedans (avec la date d'ajout ?) et on on met le flag "tweeté" = 0 et vu = 1
                             #df_S = df_S.append(pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)) # TODO : si la ligne suivante ne produit pas de bugs pendant suffisamment de temps, alors celle ci peut être supprimée (car deprecated)
-                            df_S = pandas.concat([df_S, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
+                            # df_S = pandas.concat([df_S, pandas.Series({"flag_tweeted" : 0, "flag_vu" : 1}, name=numero_du_texte)])
+                            df_S.loc[numero_du_texte] = dict(flag_tweeted=0, flag_vu=1)
 
                         else:
                             # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
