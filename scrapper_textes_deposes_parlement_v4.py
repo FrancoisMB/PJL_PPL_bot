@@ -49,6 +49,10 @@ logger.setLevel(logging.INFO)
 
 def main():
 
+    # grab du fichier avant changement de directory
+    with open("./TOKENS.json", "r") as f:
+        js_on = json.load(f)
+
     # set le dossier de travail à l'endroit où se trouve
     path_wd = r"D:\Code\Code_Python\scrapper_textes_deposes_parlement"
     os.chdir(path_wd)
@@ -61,9 +65,6 @@ def main():
     logger.info(f"{date_dernier_run = }")
 
     # connexion à twitter
-    with open("TOKENS.json", "r") as f:
-        js_on = json.load(f)
-
     auth = tweepy.OAuthHandler(js_on["consumer_key"], js_on["consumer_secret"])
     auth.set_access_token(js_on["access_token"], js_on["access_secret"])
     api = tweepy.API(auth)
