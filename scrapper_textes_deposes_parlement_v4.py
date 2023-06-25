@@ -109,7 +109,7 @@ def main():
         else:
             return input_text[:tweet_size-1]+"… "
 
-    #%%
+    # Configuration
 
     send_to_twitter = True
     enregistrer_quand_meme = True
@@ -121,8 +121,6 @@ def main():
 
     while True:
         try:
-        #%%
-
             # initialisation du fichier AN
 
             nom_fichier_AN = "v4_dernier_numero_texte_depose_AN.csv"
@@ -153,7 +151,7 @@ def main():
             df_S['flag_vu'] = 0
 
 
-            #%%
+            # Assemblée Nationale
             if scrap_AN:
                 # on scrap la page de l'AN
                 # balises pour le texte :
@@ -253,23 +251,8 @@ def main():
 
 
 
-
-
-
-
-            #%%
-
+            # Sénat
             if scrap_Senat:
-
-                # 4) b) scrapper la page du Sénat (pas de limite sur le nombre d'éléments, il y a les 12 derniers mois)
-                    # s'il n'y a qu'un texte à une date, le xpath prend la forme :
-                    # /html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/ul/li/a
-                    # s'il y en a plusieurs, les xpath prennent la forme :
-                    # /html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[4]/ul/li[1]/a
-                    # /html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[4]/ul/li[2]/a
-                    # /html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[4]/ul/li[3]/a
-                    # /html/body/div[1]/div/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[5]/ul/li/a
-
                 url_Senat = "http://www.senat.fr/dossiers-legislatifs/textes-recents.html"
                 page_Senat = requests.get(url_Senat)
                 tree = html.fromstring(page_Senat.content)
@@ -434,7 +417,7 @@ def main():
                     # on enregistre le df_S qui reste
                     df_S.to_csv(nom_fichier_S, columns=["flag_tweeted"])
 
-    #%%
+
             print(".", end="")
             # if not send_to_twitter:
             #     break
