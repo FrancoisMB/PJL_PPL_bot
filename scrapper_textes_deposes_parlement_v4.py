@@ -389,15 +389,14 @@ def main():
 
                                 continue
                             else: # cas où ya rien
-                                logger.warning("c'est chelou, 'Texte</a>' ou 'Texte de la commission</a>' a bien été trouvé"
-                                               "mais on a pas trouvé de lien AN ou Sénat devant"
+                                logger.warning("c'est chelou, 'Texte</a>' ou 'Texte de la commission</a>' a bien été trouvé "
+                                               "mais on a pas trouvé de lien AN ou Sénat devant, "
                                                f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                 continue
 
 
                         except Exception as erreur:
-                            logger.error(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier}"
-                                         "print de l'erreur : {erreur}")
+                            logger.error(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier} :\n{erreur}")
                             continue
 
 
@@ -421,7 +420,7 @@ def main():
                             except Exception as err:
                                 if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                     df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                                logger.error("Erreur lors du tweet de {texte_du_tweet} : {err}")
+                                logger.error(f"Erreur lors du tweet de {texte_du_tweet} : {err}")
                                 continue
                         # et on set flag tweeté = 1
                         df_S.at[numero_du_texte,"flag_tweeted"] = 1
