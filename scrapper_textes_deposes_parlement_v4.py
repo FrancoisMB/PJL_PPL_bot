@@ -69,9 +69,10 @@ def main():
 
     try:
         api.verify_credentials()
-        print("Authentication OK")
-    except:
+    except Exception:
         print("Error during authentication")
+    else:
+        print("Authentication OK")
 
     tweet_size = 280 - 24
 
@@ -188,7 +189,7 @@ def main():
 
             try:
                 df_AN = pandas.read_csv(nom_fichier_AN, index_col=0)
-            except:
+            except Exception:
                 print("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
                 df_AN = pandas.DataFrame(columns=["flag_tweeted"])
 
@@ -203,7 +204,7 @@ def main():
 
             try:
                 df_S = pandas.read_csv(nom_fichier_S, index_col=0)
-            except:
+            except Exception:
                 print("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
                 df_S = pandas.DataFrame(columns=["flag_tweeted"])
 
@@ -238,7 +239,7 @@ def main():
                         numero_du_texte = numero_du_texte.split("N°",1)[1] #permet de ne récupérer que ce qui est après "- N° "
                         numero_du_texte = numero_du_texte.replace(u'\xa0', u'')
                         #print(numero_du_texte)
-                    except:
+                    except Exception:
                         print("AN erreur pour récupérer numéro du texte à la boucle n°" + str(i-1))
                         print("")
                         continue
@@ -265,19 +266,19 @@ def main():
                     try:
                         lien_vers_dossier = str(tree.xpath(base_xpath+'/ul/li[2]/a')[0].attrib["href"])
                         lien_vers_texte = str(tree.xpath(base_xpath+'/ul/li[3]/a')[0].attrib["href"])
-                    except:
+                    except Exception:
                         # si on est ici, c'est qu'il n'y a pas la mention "mis en ligne le XXX" dans la liste, et donc que 2 éléments et pas 3 sur la ligne
                         # et donc la recherche avec le xpath de "lien_vers_texte" ci dessus renvoie une erreur "list index out of range"
                         if verbose:print(numero_du_texte, "\t \t \t \t \t \t doc non pub")
                         continue
 
-                    try :
+                    try:
                         page_texte_AN = requests.get(lien_vers_texte)
                         # si on trouve "Document non encore publié", on passe au prochain texte de la liste
                         if "Document non encore publié" in page_texte_AN.text:
                             if 1:print(numero_du_texte, "\t \t \t \t \t \t doc non pub type 2 c chelou")
                             continue
-                    except:
+                    except Exception:
                         # là j'ai voulu faire une vérif que dans la page du texte, il n'y avait pas "Document non encore publié
                         # mais ça a raté, jsais pas, ptet timeout
                         # osef, on tweete
@@ -287,7 +288,7 @@ def main():
                     try:
                         intitule_du_texte = str(tree.xpath(base_xpath+'/p/text()')[0])
                         #print(intitule_du_texte)
-                    except:
+                    except Exception:
                         print("AN erreur pour récupérer intitulé du texte", numero_du_texte)
                         print("")
                         continue  # permet de ne pas mettre un truc sans intitule_du_texte dans liste_textes
@@ -353,7 +354,7 @@ def main():
                         try:
                             intitule_du_texte = liste_intitule_des_textes[j].text
                             #print(liste_intitule_des_textes[j].text)
-                        except:
+                        except Exception:
                             print("S erreur pour récupérer intitulé du texte à la", str(i-1)+"ème date, texte n°" + str(j+1))
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                             continue
@@ -363,7 +364,7 @@ def main():
                             lien_vers_dossier = "http://www.senat.fr" + numero_du_texte
                             #print(lien_vers_dossier)
                             numero_du_texte = numero_du_texte[20:-5]
-                        except:
+                        except Exception:
                             print("S erreur pour récupérer lien", intitule_du_texte)
                             print(" ")
                             # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
