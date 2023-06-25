@@ -369,7 +369,7 @@ def main():
                                     logger.warning("c'est chelou, ni 'Texte</a>' ni 'Texte de la commission</a>' n'ont été trouvés, ni 'Texte n°' sans lien\n"
                                                     f"voilà le lien vers le dossier législatif : {lien_vers_dossier}")
                                     continue
-                            max_des_deux = max(liste_start_mot_texte_commission + liste_start_mot_texte) # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
+                            max_des_deux = max(liste_start_mot_texte_commission[-1], liste_start_mot_texte[-1]) # position du dernier endroit où il a "Texte</a>" ou "Texte de la commission</a>"
 
                             borne_arriere = 26 # choisi un peu au pif, de manière à capturer le texte "Texte de la commission</a>"
 
