@@ -39,7 +39,7 @@ http://www.senat.fr/dossiers-legislatifs/textes-recents.html
 #        et variables de ce tour de boucle (et ne plus les print)
 #        + à la toute fin, si un fichier a été créé, print un message pour le dire
 
-if __name__ == "__main__":
+def main():
 
     from pathlib import Path
     from lxml import html
@@ -521,3 +521,6 @@ if __name__ == "__main__":
         except Exception as err:
             print(err)
             time.sleep(60)
+
+if __name__ == '__main__':
+    main()
