@@ -86,33 +86,34 @@ def main(
     while True:
         try:
             # initialisation du fichier AN
+            if scrap_AN:
 
-            nom_fichier_AN = "v4_dernier_numero_texte_depose_AN.csv"
+                nom_fichier_AN = "v4_dernier_numero_texte_depose_AN.csv"
 
-            try:
-                df_AN = pandas.read_csv(nom_fichier_AN, index_col=0)
-            except Exception:
-                logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
-                df_AN = pandas.DataFrame(columns=["flag_tweeted"])
+                try:
+                    df_AN = pandas.read_csv(nom_fichier_AN, index_col=0)
+                except Exception:
+                    logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
+                    df_AN = pandas.DataFrame(columns=["flag_tweeted"])
 
-            # on ajoute une nouvelle colonne vide flag_vu
-                # qui contiendra le fait que les lignes dans le df_AN existent aussi dans la page
-            df_AN['flag_vu'] = 0
-
+                # on ajoute une nouvelle colonne vide flag_vu
+                    # qui contiendra le fait que les lignes dans le df_AN existent aussi dans la page
+                df_AN['flag_vu'] = 0
 
             # initialisation du fichier Sénat
+            if scrap_Senat:
 
-            nom_fichier_S = "v4_dernier_numero_texte_depose_S.csv"
+                nom_fichier_S = "v4_dernier_numero_texte_depose_S.csv"
 
-            try:
-                df_S = pandas.read_csv(nom_fichier_S, index_col=0)
-            except Exception:
-                logger.warning("PB dans l'import du précédent fichier S, un nouveau a du être recréé")
-                df_S = pandas.DataFrame(columns=["flag_tweeted"])
+                try:
+                    df_S = pandas.read_csv(nom_fichier_S, index_col=0)
+                except Exception:
+                    logger.warning("PB dans l'import du précédent fichier S, un nouveau a du être recréé")
+                    df_S = pandas.DataFrame(columns=["flag_tweeted"])
 
-            # on ajoute une nouvelle colonne vide flag_vu
-                # qui contiendra le fait que les lignes dans le df_S existent aussi dans la page
-            df_S['flag_vu'] = 0
+                # on ajoute une nouvelle colonne vide flag_vu
+                    # qui contiendra le fait que les lignes dans le df_S existent aussi dans la page
+                df_S['flag_vu'] = 0
 
 
             # Assemblée Nationale
