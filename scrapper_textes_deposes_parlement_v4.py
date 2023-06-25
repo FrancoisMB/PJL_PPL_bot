@@ -54,8 +54,7 @@ def main():
         js_on = json.load(f)
 
     # set le dossier de travail à l'endroit où se trouve
-    path_wd = r"D:\Code\Code_Python\scrapper_textes_deposes_parlement"
-    os.chdir(path_wd)
+    os.chdir("./scrapper_textes_deposes_parlement")
 
     # 2) initier des fichiers
     if not os.path.exists('date_dernier_run.txt'):
