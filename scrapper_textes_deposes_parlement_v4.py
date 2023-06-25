@@ -47,7 +47,14 @@ logger.setLevel(logging.INFO)
 #        et variables de ce tour de boucle (et ne plus les print)
 #        + à la toute fin, si un fichier a été créé, print un message pour le dire
 
-def main():
+def main(
+    send_to_twitter = True,
+    enregistrer_quand_meme = True,
+
+    scrap_AN = True,
+    scrap_Senat = True,
+    nb_de_textes_a_scrapper = 149,
+    ):
 
     # grab du fichier avant changement de directory
     with open("./TOKENS.json", "r") as f:
@@ -74,15 +81,6 @@ def main():
         logger.error("Error during authentication")
     else:
         logger.info("Authentication OK")
-
-    # Configuration
-
-    send_to_twitter = True
-    enregistrer_quand_meme = True
-
-    scrap_AN = True
-    scrap_Senat = True
-    nb_de_textes_a_scrapper = 149
 
 
     while True:
