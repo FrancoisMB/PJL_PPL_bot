@@ -167,7 +167,6 @@ def main():
                 page_AN = requests.get(url_AN)
                 tree = html.fromstring(page_AN.content)
 
-                nb_de_textes_a_scrapper = nb_de_textes_a_scrapper
                 for i in range(2, nb_de_textes_a_scrapper+1): # pour chaque entrée dans la page de la liste des textes de l'AN
                     try: # on récupère son numéro de texte
                         base_xpath = '/html/body/div[1]/div[2]/div/div/section/div/article/div/div[2]/div[2]/ul/li['+ str(i) +']'
@@ -189,7 +188,7 @@ def main():
                     else:
                         # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
                         df_AN.at[numero_du_texte,"flag_vu"] = 1
-                        if df_AN.at[numero_du_texte, "flag_tweeted"] == 1: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
+                        if df_AN.at[numero_du_texte, "flag_tweeted"]: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
                             logger.debug(f"{numero_du_texte} \t \t \t \t \t \t déjà tweeté")
                             continue
 
@@ -308,7 +307,7 @@ def main():
                         else:
                             # Oui : on set le flag vu = 1, et on récupère l'info du flag "tweeté"
                             df_S.at[numero_du_texte,"flag_vu"] = 1
-                            if df_S.at[numero_du_texte, "flag_tweeted"] == 1: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
+                            if df_S.at[numero_du_texte, "flag_tweeted"]: # si flag tweeté = 1, pas besoin de traiter, on continue à la next itération de la boucle
                                 logger.debug(f"{numero_du_texte} \t \t \t \t \t \t déjà tweeté")
                                 continue
 
