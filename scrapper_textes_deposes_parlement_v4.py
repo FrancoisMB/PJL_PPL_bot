@@ -94,8 +94,8 @@ def main():
         input_text = re.sub(r"(?:et|,) plusieurs de (?:ses|leurs) coll[èe]gues", "", input_text)
         input_text = input_text.replace('après engagement de la procédure accélérée', '')
 
-        input_text = re.sub(r"\s*,+", ",", input_text)
         input_text = re.sub(r"\s+", " ", input_text)
+        input_text = re.sub(r"\s*,+", ",", input_text)
 
         if len(input_text) > tweet_size:
             input_text = input_text.replace(r"PPL organique", "PPLO")
