@@ -10,7 +10,7 @@ http://www.senat.fr/dossiers-legislatifs/textes-recents.html
 @author: Francois
 """
 
-import logging, os, re, time
+import json, logging, os, re, time
 from pathlib import Path
 from lxml import html
 import tweepy, requests, pandas
@@ -61,13 +61,11 @@ def main():
     logger.info(f"{date_dernier_run = }")
 
     # connexion à twitter
-    consumer_key = ""
-    consumer_secret = ""
-    access_token = ""
-    access_secret = ""
+    with open("TOKENS.json", "r") as f:
+        js_on = json.load(f)
 
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_secret)
+    auth = tweepy.OAuthHandler(js_on["consumer_key"], js_on["consumer_secret"])
+    auth.set_access_token(js_on["access_token"], js_on["access_secret"])
     api = tweepy.API(auth)
 
     try:
