@@ -56,9 +56,8 @@ def main():
     # 2) initier des fichiers
     if not os.path.exists('date_dernier_run.txt'):
         Path('date_dernier_run.txt').touch()
-    f = open("date_dernier_run.txt", "r")
-    date_dernier_run = f.read()
-    f.close()
+    with open("date_dernier_run.txt", "r") as f:
+        date_dernier_run = f.read()
     logger.info(f"{date_dernier_run = }")
 
     # connexion à twitter
