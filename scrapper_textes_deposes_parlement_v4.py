@@ -71,16 +71,17 @@ def main(
     logger.info(f"{date_dernier_run = }")
 
     # connexion à twitter
-    auth = tweepy.OAuthHandler(js_on["consumer_key"], js_on["consumer_secret"])
-    auth.set_access_token(js_on["access_token"], js_on["access_secret"])
-    api = tweepy.API(auth)
+    if send_to_twitter:
+        auth = tweepy.OAuthHandler(js_on["consumer_key"], js_on["consumer_secret"])
+        auth.set_access_token(js_on["access_token"], js_on["access_secret"])
+        api = tweepy.API(auth)
 
-    try:
-        api.verify_credentials()
-    except Exception:
-        logger.error("Error during authentication")
-    else:
-        logger.info("Authentication OK")
+        try:
+            api.verify_credentials()
+        except Exception:
+            logger.error("Error during authentication")
+        else:
+            logger.info("Authentication OK")
 
 
     while True:
