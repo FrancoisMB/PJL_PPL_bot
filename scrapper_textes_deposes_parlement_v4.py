@@ -417,10 +417,10 @@ def format_title(input_text):
     input_text = re.sub(r"\s*,+", ",", input_text)
 
     if len(input_text) > _tweet_size:
-        input_text = input_text.replace(r"PPL organique", "PPLO")
-        input_text = input_text.replace(r"PJL organique", "PJLO")
-        input_text = input_text.replace(r"PPL constitutionnelle", "PPLC")
-        input_text = input_text.replace(r"PJL constitutionnelle", "PJLC")
+        input_text = input_text.replace("PPL organique", "PPLO")
+        input_text = input_text.replace("PJL organique", "PJLO")
+        input_text = input_text.replace("PPL constitutionnelle", "PPLC")
+        input_text = input_text.replace("PJL constitutionnelle", "PJLC")
 
     if len(input_text) <= _tweet_size:
         return input_text +" "
