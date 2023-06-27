@@ -85,7 +85,7 @@ def main(
         try:
             api.verify_credentials()
         except Exception:
-            logger.error("Error during authentication")
+            logger.exception("Error during authentication")
         else:
             logger.info("Authentication OK")
 
@@ -100,7 +100,7 @@ def main(
                 try:
                     df_AN = pandas.read_csv(nom_fichier_AN, index_col=0)
                 except Exception:
-                    logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé")
+                    logger.warning("PB dans l'import du précédent fichier AN, un nouveau a du être recréé", exc_info=True)
                     df_AN = pandas.DataFrame(columns=["flag_tweeted"])
 
                 # on ajoute une nouvelle colonne vide flag_vu
@@ -115,7 +115,7 @@ def main(
                 try:
                     df_S = pandas.read_csv(nom_fichier_S, index_col=0)
                 except Exception:
-                    logger.warning("PB dans l'import du précédent fichier S, un nouveau a du être recréé")
+                    logger.warning("PB dans l'import du précédent fichier S, un nouveau a du être recréé", exc_info=True)
                     df_S = pandas.DataFrame(columns=["flag_tweeted"])
 
                 # on ajoute une nouvelle colonne vide flag_vu
@@ -146,7 +146,7 @@ def main(
                         numero_du_texte = numero_du_texte.replace(u'\xa0', u'')
                         #print(numero_du_texte)
                     except Exception:
-                        logger.error(f"AN erreur pour récupérer numéro du texte à la boucle n°{i-1}\n")
+                        logger.exception(f"AN erreur pour récupérer numéro du texte à la boucle n°{i-1}")
                         continue
 
                     #numero_du_texte = "4723"
@@ -175,7 +175,7 @@ def main(
                     except Exception:
                         # si on est ici, c'est qu'il n'y a pas la mention "mis en ligne le XXX" dans la liste, et donc que 2 éléments et pas 3 sur la ligne
                         # et donc la recherche avec le xpath de "lien_vers_texte" ci dessus renvoie une erreur "list index out of range"
-                        logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub")
+                        logger.debug(f"{numero_du_texte} \t \t \t \t \t \t doc non pub", exc_info=True)
                         continue
 
                     try:
@@ -195,7 +195,7 @@ def main(
                         intitule_du_texte = str(tree.xpath(base_xpath+'/p/text()')[0])
                         #print(intitule_du_texte)
                     except Exception:
-                        logger.error(f"AN erreur pour récupérer intitulé du texte {numero_du_texte}\n")
+                        logger.exception(f"AN erreur pour récupérer intitulé du texte {numero_du_texte}\n")
                         continue  # permet de ne pas mettre un truc sans intitule_du_texte dans liste_textes
 
                     intitule_du_texte = format_title(intitule_du_texte) # transforme "projet de loi" en "PJL" etcaetera
@@ -206,7 +206,7 @@ def main(
                         try:
                             tweeted = api.update_status(texte_du_tweet)
                         except Exception as err:
-                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} :\n{err}\n")
+                            logger.exception(f"Erreur lors du tweet de {texte_du_tweet!r}")
                             if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                 df_AN.at[numero_du_texte,"flag_tweeted"] = 1
                                 logger.error("(tweet marked as sent)")
@@ -240,7 +240,7 @@ def main(
                         intitule_du_texte = intit.findtext("h2")
                         #print(intit.text)
                     except Exception:
-                        logger.error(f"S erreur pour récupérer intitulé du texte n°{j}")
+                        logger.exception(f"S erreur pour récupérer intitulé du texte n°{j}")
                         # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                         continue
 
@@ -250,7 +250,7 @@ def main(
                         #print(lien_vers_dossier)
                         numero_du_texte = numero_du_texte.rpartition("/")[2].partition(".")[0]
                     except Exception:
-                        logger.error(f"S erreur pour récupérer lien {intitule_du_texte}\n")
+                        logger.exception(f"S erreur pour récupérer lien {intitule_du_texte}\n")
                         # nb_de_dates_a_scrapper = nb_de_dates_a_scrapper + 1 # ça ça générait un loop infini à l'AN, au Sénat je sais pas, je crois pas, mais dans le doute je grey out
                         continue
 
@@ -353,7 +353,7 @@ def main(
 
 
                     except Exception as erreur:
-                        logger.error(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier} :\n{erreur}")
+                        logger.exception(f"S erreur pour récupérer, dans le dossier législatif, le lien vers la dernière version du texte {lien_vers_dossier}")
                         continue
 
 
@@ -377,7 +377,7 @@ def main(
                         except Exception as err:
                             if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                 df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} : {err}")
+                            logger.exception(f"Erreur lors du tweet de {texte_du_tweet!r}")
                             continue
                     # et on set flag tweeté = 1
                     df_S.at[numero_du_texte,"flag_tweeted"] = 1
@@ -397,7 +397,7 @@ def main(
             time.sleep(120)
 
         except Exception as err:
-            logger.error(err)
+            logger.exception("")
             time.sleep(60)
 
 
