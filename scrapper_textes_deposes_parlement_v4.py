@@ -202,7 +202,7 @@ def main(
                         except Exception as err:
                             if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                 df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} :\n{err}\n")
+                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} :\n{err}\n") # ici
                             continue
                     # et on set flag tweeté = 1
                     df_AN.at[numero_du_texte,"flag_tweeted"] = 1
@@ -415,7 +415,7 @@ def format_title(input_text):
     input_text = input_text.replace('après engagement de la procédure accélérée', '')
 
     input_text = re.sub(r"\s+", " ", input_text)
-    input_text = re.sub(r"\s*,+", ",", input_text)
+    input_text = re.sub(r"(?:\s*,)+", ",", input_text)
 
     if len(input_text) > _tweet_size:
         input_text = input_text.replace("PPL organique", "PPLO")
