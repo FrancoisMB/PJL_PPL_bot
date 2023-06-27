@@ -200,9 +200,10 @@ def main(
                         try:
                             tweeted = api.update_status(texte_du_tweet)
                         except Exception as err:
+                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} :\n{err}\n")
                             if err.args[0] == '403 Forbidden\n187 - Status is a duplicate.':
                                 df_AN.at[numero_du_texte,"flag_tweeted"] = 1
-                            logger.error(f"Erreur lors du tweet de {texte_du_tweet} :\n{err}\n") # ici
+                                logger.error("(tweet marked as sent)")
                             continue
                     # et on set flag tweeté = 1
                     df_AN.at[numero_du_texte,"flag_tweeted"] = 1
