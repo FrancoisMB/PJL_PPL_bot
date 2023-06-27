@@ -16,7 +16,10 @@ from pathlib import Path
 from lxml import html
 import tweepy, requests, pandas
 
-logging.basicConfig()
+_FORMAT = "{asctime}:{levelname}:{message}"
+if __name__ != "__main__":
+    _FORMAT = "{asctime}:{module}:{levelname}:{message}"
+logging.basicConfig(format=_FORMAT, style="{", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
