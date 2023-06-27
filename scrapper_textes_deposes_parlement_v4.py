@@ -426,7 +426,7 @@ def format_title(input_text):
     if len(input_text) <= _tweet_size:
         return input_text +" "
     else:
-        return input_text[:_tweet_size-1]+"… "
+        return input_text[:_tweet_size-2]+"… "
 
 
 if __name__ == '__main__':
