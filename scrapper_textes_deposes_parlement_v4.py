@@ -10,6 +10,7 @@ http://www.senat.fr/dossiers-legislatifs/textes-recents.html
 @author: Francois
 """
 
+import datetime
 import json, logging, os, re, time
 from pathlib import Path
 from lxml import html
@@ -69,6 +70,8 @@ def main(
     with open("date_dernier_run.txt", "r") as f:
         date_dernier_run = f.read()
     logger.info(f"{date_dernier_run = }")
+    with open("date_dernier_run.txt", "w") as f:
+        f.write(datetime.datetime.now().isoformat())
 
     # connexion à twitter
     if send_to_twitter:
